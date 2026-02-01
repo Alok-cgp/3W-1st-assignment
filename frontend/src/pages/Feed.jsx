@@ -26,6 +26,8 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Feed = () => {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -38,7 +40,7 @@ const Feed = () => {
   // Fetch all posts from the backend with pagination
   const fetchPosts = async (pageNum = 1, append = false) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/posts?page=${pageNum}&limit=5`);
+      const res = await axios.get(`${API_URL}/api/posts?page=${pageNum}&limit=5`);
       const { posts: newPosts, totalPages } = res.data;
       
       if (append) {
@@ -84,7 +86,7 @@ const Feed = () => {
 
     try {
       // Axios defaults include the Auth token set in AuthContext
-      await axios.post('http://localhost:5000/api/posts', formData, {
+      await axios.post(`${API_URL}/api/posts`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setText('');
@@ -100,7 +102,7 @@ const Feed = () => {
   // Handle like/unlike functionality
   const handleLike = async (postId) => {
     try {
-      await axios.put(`http://localhost:5000/api/posts/like/${postId}`);
+      await axios.put(`${API_URL}/api/posts/like/${postId}`);
       fetchPosts();
     } catch (err) {
       toast.error('Failed to like post');
@@ -111,7 +113,7 @@ const Feed = () => {
   const handleComment = async (postId, commentText) => {
     if (!commentText.trim()) return;
     try {
-      await axios.post(`http://localhost:5000/api/posts/comment/${postId}`, { text: commentText });
+      await axios.post(`${API_URL}/api/posts/comment/${postId}`, { text: commentText });
       fetchPosts();
     } catch (err) {
       toast.error('Failed to comment');
@@ -276,7 +278,7 @@ const Feed = () => {
           {post.image && (
             <CardMedia
               component="img"
-              image={`http://localhost:5000${post.image}`}
+              image={`${API_URL}${post.image}`}
               alt="Post image"
               sx={{ maxHeight: 400, objectFit: 'contain', bgcolor: '#f0f2f5' }}
             />
