@@ -16,14 +16,16 @@ const auth = async (req, res, next) => {
     req.userId = decoded.id;
     next();
   } catch (err) {
-    res.status(401).json({ message: 'Token is not valid' });
+    console.error('Auth Middleware Error:', err.message);
+    res.status(401).json({ message: 'Token is not valid', error: err.message });
   }
 };
 
 // Multer setup for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    const uploadPath = path.join(__dirname, '..', 'uploads');
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -35,6 +37,7 @@ const upload = multer({ storage });
 // Create Post
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
+    console.log('Post creation attempt by user ID:', req.userId);
     const { text } = req.body;
     
     // Find user and handle case where user might not exist in DB anymore

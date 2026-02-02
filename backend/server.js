@@ -36,6 +36,16 @@ const postRoutes = require('./routes/posts');
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('UNHANDLED ERROR:', err);
+  res.status(500).json({
+    message: 'An unexpected server error occurred',
+    error: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 // MongoDB Connection using URI from .env
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
