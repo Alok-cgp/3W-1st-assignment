@@ -36,7 +36,12 @@ const upload = multer({ storage });
 router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const { text } = req.body;
+    
+    // Find user and handle case where user might not exist in DB anymore
     const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found. Please log in again.' });
+    }
     
     if (!text && !req.file) {
       return res.status(400).json({ message: 'Post must have text or an image' });
@@ -44,7 +49,7 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
 
     const newPost = new Post({
       user: req.userId,
-      username: user.username,
+      username: user.username, // Safe now because we checked if user exists
       text,
       image: req.file ? `/uploads/${req.file.filename}` : ''
     });
@@ -52,10 +57,16 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (err) {
-    console.error('POST /api/posts error:', err);
+    console.error('CRITICAL POST ERROR:', {
+      message: err.message,
+      stack: err.stack,
+      body: req.body,
+      file: req.file ? req.file.filename : 'none'
+    });
     res.status(500).json({ 
       message: 'Server error while creating post',
-      error: err.message 
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 });
