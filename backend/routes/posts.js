@@ -52,8 +52,11 @@ router.post('/', auth, upload.single('image'), async (req, res) => {
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('POST /api/posts error:', err);
+    res.status(500).json({ 
+      message: 'Server error while creating post',
+      error: err.message 
+    });
   }
 });
 
