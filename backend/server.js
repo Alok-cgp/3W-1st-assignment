@@ -12,6 +12,12 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(express.json());
+
+// Root Route for Health Check
+app.get('/', (req, res) => {
+  res.send('Social App Backend API is running...');
+});
+
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -24,8 +30,16 @@ app.use('/api/posts', postRoutes);
 
 // MongoDB Connection using URI from .env
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Could not connect to MongoDB:', err));
+  .then(() => {
+    console.log('Connected to MongoDB Atlas');
+    console.log('Database Name:', mongoose.connection.name);
+  })
+  .catch(err => {
+    console.error('Could not connect to MongoDB:', err.message);
+    if (err.message.includes('ECONNREFUSED')) {
+      console.log('Ensure you are not using localhost if you want Atlas.');
+    }
+  });
 
 // Start server
 const PORT = process.env.PORT || 5000;
